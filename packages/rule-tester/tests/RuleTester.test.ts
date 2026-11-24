@@ -959,6 +959,30 @@ describe(RuleTester, () => {
       `);
     });
 
+    it('keeps a manually set skip when other tests have constraints', () => {
+      const ruleTester = new RuleTester({
+        languageOptions: { parser },
+      });
+
+      ruleTester.run('my-rule', NOOP_RULE, {
+        invalid: [
+          {
+            code: 'satisfied constraint',
+            dependencyConstraints: {
+              typescript: '4.0',
+            },
+            errors: [{ messageId: 'error' }],
+          },
+        ],
+        valid: [{ code: 'manually skipped', skip: true }],
+      });
+
+      expect(getTestConfigFromCall()).toMatchObject([
+        { code: 'manually skipped', skip: true },
+        { code: 'satisfied constraint', skip: false },
+      ]);
+    });
+
     describe('constructor constraints', () => {
       it('skips all tests if a constructor constraint is not satisfied', () => {
         satisfiesAllDependencyConstraintsMock.mockReturnValueOnce(false);
